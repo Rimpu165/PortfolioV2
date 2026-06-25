@@ -10,7 +10,7 @@ export const LiveProjectButton: FC<LiveProjectButtonProps> = ({ onClick, href })
     <span className="inline-block">Live Project</span>
   );
 
-  const classes = "rounded-full border-2 border-[#D7E2EA] text-[#D7E2EA] font-medium uppercase tracking-widest px-8 py-3 text-sm sm:px-10 sm:py-3.5 sm:text-base hover:bg-[#D7E2EA]/10 transition-colors duration-200 active:scale-95 whitespace-nowrap cursor-pointer";
+  const classes = "rounded-full border border-[#D7E2EA]/40 text-[#D7E2EA] font-medium uppercase tracking-widest px-5 py-2 text-xs hover:border-[#D7E2EA] hover:bg-[#D7E2EA]/10 transition-all duration-200 active:scale-95 whitespace-nowrap cursor-pointer";
 
   if (href) {
     return (

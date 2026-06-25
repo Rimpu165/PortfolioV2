@@ -1,7 +1,15 @@
-import type { FC } from 'react';
+import { useRef } from 'react';
+import type { FC, MouseEvent } from 'react';
+import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { FadeIn } from './FadeIn';
 
-const SERVICES = [
+interface ServiceItem {
+  num: string;
+  name: string;
+  desc: string;
+}
+
+const SERVICES: ServiceItem[] = [
   {
     num: '01',
     name: 'Frontend Development',
@@ -29,57 +37,107 @@ const SERVICES = [
   },
 ];
 
+interface CardProps {
+  item: ServiceItem;
+  index: number;
+}
+
+const ServiceCard: FC<CardProps> = ({ item }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [12, -12]), { stiffness: 45, damping: 20 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-12, 12]), { stiffness: 45, damping: 20 });
+
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const xVal = e.clientX - rect.left - width / 2;
+    const yVal = e.clientY - rect.top - height / 2;
+
+    mouseX.set(xVal / width);
+    mouseY.set(yVal / height);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  return (
+    <div style={{ perspective: 1000 }} className="w-full h-full">
+      <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          rotateX,
+          rotateY,
+          transformStyle: 'preserve-3d',
+        }}
+        className="h-full relative rounded-3xl border border-white/[0.04] bg-white/[0.02] hover:border-white/10 p-6 sm:p-8 flex flex-col gap-4 justify-between transition-colors duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:shadow-[0_20px_50px_rgba(182,0,168,0.1)] select-none cursor-pointer group"
+      >
+        {/* Glow Hover Layer */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#B600A8]/4 via-[#7621B0]/2 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl pointer-events-none" />
+
+        {/* Large Decorative Number (Depth 15px) */}
+        <div
+          style={{ transform: 'translateZ(15px)' }}
+          className="absolute top-4 right-6 font-black text-[#D7E2EA]/5 leading-none transition-transform duration-300 text-6xl sm:text-7xl pointer-events-none select-none"
+        >
+          {item.num}
+        </div>
+
+        {/* Title (Depth 30px) */}
+        <h3
+          style={{ transform: 'translateZ(30px)' }}
+          className="text-lg sm:text-xl md:text-2xl font-bold uppercase text-textLight group-hover:text-white transition-colors duration-200 tracking-wide mt-8 text-left"
+        >
+          {item.name}
+        </h3>
+
+        {/* Description (Depth 25px) */}
+        <p
+          style={{ transform: 'translateZ(25px)' }}
+          className="text-sm text-textLight/70 font-light leading-relaxed mt-2 text-left"
+        >
+          {item.desc}
+        </p>
+      </motion.div>
+    </div>
+  );
+};
+
 export const ServicesSection: FC = () => {
   return (
     <section
       id="services"
-      className="relative bg-white text-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 select-none z-20"
+      className="relative bg-transparent text-textLight px-5 sm:px-8 md:px-10 py-20 sm:py-28 select-none z-20"
     >
       <div className="max-w-5xl mx-auto w-full flex flex-col">
         {/* Services Heading */}
-        <FadeIn delay={0} y={40} className="w-full text-center">
+        <FadeIn delay={0} y={40} className="w-full text-center mb-16 sm:mb-20 md:mb-24">
           <h2
-            className="font-black uppercase text-[#0C0C0C] tracking-tight text-center mb-16 sm:mb-20 md:mb-28"
-            style={{ fontSize: 'clamp(3rem, 12vw, 160px)' }}
+            className="hero-heading font-black uppercase text-center leading-none tracking-tight"
+            style={{ fontSize: 'clamp(2.5rem, 8vw, 90px)' }}
           >
             Services
           </h2>
         </FadeIn>
 
-        {/* Services List */}
-        <div className="flex flex-col w-full">
+        {/* Services 3D Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full items-stretch">
           {SERVICES.map((item, index) => (
             <FadeIn
               key={item.num}
               delay={index * 0.1}
               y={30}
-              className={`w-full flex flex-row items-center gap-6 sm:gap-10 md:gap-16 py-8 sm:py-10 md:py-12 border-b border-[#0C0C0C]/15 ${
-                index === 0 ? 'border-t border-[#0C0C0C]/15' : ''
-              }`}
+              className="h-full"
             >
-              {/* Number on the left */}
-              <div
-                className="font-black text-[#0C0C0C] leading-none select-none flex-shrink-0 min-w-[70px] sm:min-w-[110px] md:min-w-[160px]"
-                style={{ fontSize: 'clamp(3rem, 10vw, 140px)' }}
-              >
-                {item.num}
-              </div>
-
-              {/* Title & description stacked vertically on the right */}
-              <div className="flex flex-col gap-2 text-left">
-                <h3
-                  className="font-medium uppercase text-[#0C0C0C] tracking-wide"
-                  style={{ fontSize: 'clamp(1.1rem, 2.2vw, 2.1rem)' }}
-                >
-                  {item.name}
-                </h3>
-                <p
-                  className="font-light leading-relaxed text-[#0C0C0C] opacity-60 max-w-2xl text-left"
-                  style={{ fontSize: 'clamp(0.85rem, 1.6vw, 1.25rem)' }}
-                >
-                  {item.desc}
-                </p>
-              </div>
+              <ServiceCard item={item} index={index} />
             </FadeIn>
           ))}
         </div>

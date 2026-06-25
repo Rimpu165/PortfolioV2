@@ -1,6 +1,6 @@
-import { useRef, useState, useEffect } from 'react';
-import type { FC } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
+import type { FC, MouseEvent } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { LiveProjectButton } from './LiveProjectButton';
 import { FadeIn } from './FadeIn';
 
@@ -60,91 +60,113 @@ const PROJECTS_DATA: Project[] = [
 
 interface ProjectCardProps {
   project: Project;
-  index: number;
-  totalCards: number;
-  stickyTop: number;
 }
 
-const ProjectCard: FC<ProjectCardProps> = ({ project, index, totalCards, stickyTop }) => {
-  const cardContainerRef = useRef<HTMLDivElement>(null);
+const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  // Measure card container scroll progress to drive the scale animation
-  const { scrollYProgress } = useScroll({
-    target: cardContainerRef,
-    offset: ['start start', 'end start'],
-  });
+  // Mouse coords for 3D card tilt
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-  // Scale calculation: targetScale = 1 - (totalCards - 1 - index) * 0.03
-  const targetScale = 1 - (totalCards - 1 - index) * 0.03;
-  const scale = useTransform(scrollYProgress, [0, 1], [1, targetScale]);
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [10, -10]), { stiffness: 60, damping: 25 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-10, 10]), { stiffness: 60, damping: 25 });
+
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const xVal = e.clientX - rect.left - width / 2;
+    const yVal = e.clientY - rect.top - height / 2;
+
+    mouseX.set(xVal / width);
+    mouseY.set(yVal / height);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   return (
-    <div
-      ref={cardContainerRef}
-      className="relative h-[85vh] w-full flex justify-center items-start"
-    >
+    <div style={{ perspective: 1200 }} className="w-full h-full">
       <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         style={{
-          scale,
-          top: `calc(${stickyTop + index * 28}px)`,
+          rotateX,
+          rotateY,
+          transformStyle: 'preserve-3d',
         }}
-        className="sticky w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-4 sm:p-6 md:p-8 flex flex-col gap-4 sm:gap-6"
+        className="w-full h-full rounded-[40px] border border-white/10 hover:border-white/20 bg-[#0C0C0C]/80 backdrop-blur-md p-6 sm:p-8 flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.6)] hover:shadow-[0_20px_50px_rgba(118,33,176,0.12)] transition-all duration-300 group"
       >
-        {/* Top Row: Number, Category Label, Project Name, and Live Project Button */}
-        <div className="flex flex-wrap md:flex-nowrap justify-between items-center w-full gap-4 pb-4 border-b border-[#D7E2EA]/15">
-          <div className="flex items-center gap-4 sm:gap-6">
-            <span
-              className="font-black text-[#D7E2EA] leading-none select-none flex-shrink-0"
-              style={{ fontSize: 'clamp(2rem, 6vw, 80px)' }}
+        {/* Top: 3D Pop Image frame with thumbnails */}
+        <div 
+          style={{ transform: 'translateZ(30px)', transformStyle: 'preserve-3d' }}
+          className="relative w-full h-[200px] sm:h-[230px] md:h-[250px] overflow-hidden rounded-[24px] mb-6 bg-darkBg border border-white/5"
+        >
+          <img
+            src={project.col2Image}
+            alt={`${project.name} preview`}
+            className="w-full h-full object-cover select-none group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0C]/50 to-transparent pointer-events-none" />
+
+          {/* Miniature secondary previews overlapping in the bottom corner */}
+          <div className="absolute bottom-3 right-3 flex -space-x-3 pointer-events-none z-10">
+            <div 
+              style={{ transform: 'translateZ(40px)' }}
+              className="w-10 h-10 rounded-lg overflow-hidden border border-[#0C0C0C] shadow-lg transition-transform duration-300 group-hover:translate-x-[-8px] group-hover:rotate-[-6deg]"
             >
-              {project.num}
-            </span>
-            <div className="flex flex-col text-left">
-              <span className="text-xs sm:text-sm uppercase font-light tracking-widest text-[#D7E2EA] opacity-60">
-                {project.category}
-              </span>
-              <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium uppercase tracking-wider text-[#D7E2EA]">
-                {project.name}
-              </h3>
+              <img src={project.col1Image1} alt="Preview thumbnail 1" className="w-full h-full object-cover" />
+            </div>
+            <div 
+              style={{ transform: 'translateZ(50px)' }}
+              className="w-10 h-10 rounded-lg overflow-hidden border border-[#0C0C0C] shadow-lg transition-transform duration-300 group-hover:translate-x-[-4px] group-hover:rotate-[6deg]"
+            >
+              <img src={project.col1Image2} alt="Preview thumbnail 2" className="w-full h-full object-cover" />
             </div>
           </div>
-          <LiveProjectButton href={project.link} />
         </div>
 
-        {/* Project Description (Elaborated) */}
-        <p className="text-[#D7E2EA]/75 font-light text-left text-sm sm:text-base md:text-lg max-w-3xl leading-relaxed">
+        {/* Category & Index Label */}
+        <div 
+          style={{ transform: 'translateZ(20px)' }}
+          className="flex justify-between items-center w-full mb-3"
+        >
+          <span className="text-[10px] sm:text-xs uppercase font-medium tracking-widest text-[#D7E2EA] opacity-60">
+            {project.category}
+          </span>
+          <span className="font-black text-[#D7E2EA]/15 group-hover:text-[#B600A8]/20 transition-colors duration-300 text-3xl leading-none">
+            {project.num}
+          </span>
+        </div>
+
+        {/* Project Name */}
+        <h3 
+          style={{ transform: 'translateZ(25px)' }}
+          className="text-base sm:text-lg md:text-xl font-bold uppercase tracking-wider text-[#D7E2EA] mb-3 text-left group-hover:text-white transition-colors duration-300"
+        >
+          {project.name}
+        </h3>
+
+        {/* Description (Height-stabilized) */}
+        <p 
+          style={{ transform: 'translateZ(20px)' }}
+          className="text-[#D7E2EA]/70 font-light text-left text-xs sm:text-sm leading-relaxed mb-6 line-clamp-3 h-[4.5rem] overflow-hidden"
+        >
           {project.description}
         </p>
 
-        {/* Bottom Row: Two-column Image Grid */}
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full items-stretch">
-          {/* Left Column (40% width) - 2 Stacked Images */}
-          <div className="w-full sm:w-[40%] flex flex-col gap-4 sm:gap-6">
-            <img
-              src={project.col1Image1}
-              alt={`${project.name} preview 1`}
-              className="w-full object-cover rounded-[30px] sm:rounded-[40px] md:rounded-[50px] select-none"
-              style={{ height: 'clamp(130px, 16vw, 230px)' }}
-              loading="lazy"
-            />
-            <img
-              src={project.col1Image2}
-              alt={`${project.name} preview 2`}
-              className="w-full object-cover rounded-[30px] sm:rounded-[40px] md:rounded-[50px] select-none"
-              style={{ height: 'clamp(160px, 22vw, 340px)' }}
-              loading="lazy"
-            />
-          </div>
-
-          {/* Right Column (60% width) - 1 Tall Image */}
-          <div className="w-full sm:w-[60%] flex">
-            <img
-              src={project.col2Image}
-              alt={`${project.name} preview 3`}
-              className="w-full object-cover rounded-[30px] sm:rounded-[40px] md:rounded-[50px] select-none h-[250px] sm:h-auto sm:min-h-full"
-              loading="lazy"
-            />
-          </div>
+        {/* Button footer */}
+        <div 
+          style={{ transform: 'translateZ(35px)' }}
+          className="flex justify-start w-full mt-auto"
+        >
+          <LiveProjectButton href={project.link} />
         </div>
       </motion.div>
     </div>
@@ -152,45 +174,33 @@ const ProjectCard: FC<ProjectCardProps> = ({ project, index, totalCards, stickyT
 };
 
 export const ProjectsSection: FC = () => {
-  const [stickyTop, setStickyTop] = useState(96); // default to top-24 (96px)
-
-  useEffect(() => {
-    const handleResize = () => {
-      // top-24 (96px) on mobile, top-32 (128px) on md+
-      setStickyTop(window.innerWidth >= 768 ? 128 : 96);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   return (
     <section
       id="projects"
-      className="relative bg-darkBg text-textLight rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] -mt-10 sm:-mt-12 md:-mt-14 px-5 sm:px-8 md:px-10 py-20 pb-32 select-none z-20"
+      className="relative bg-transparent text-textLight rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] -mt-10 sm:-mt-12 md:-mt-14 px-5 sm:px-8 md:px-10 py-20 pb-32 select-none z-20"
     >
-      <div className="max-w-5xl mx-auto w-full flex flex-col">
-        {/* Project Heading (Singular) */}
-        <FadeIn delay={0} y={40} className="w-full text-center mb-16 sm:mb-20 md:mb-28">
+      <div className="max-w-6xl mx-auto w-full flex flex-col">
+        {/* Project Section Heading */}
+        <FadeIn delay={0} y={40} className="w-full text-center mb-16 sm:mb-20">
           <h2
             className="hero-heading font-black uppercase text-center leading-none tracking-tight"
-            style={{ fontSize: 'clamp(3rem, 12vw, 160px)' }}
+            style={{ fontSize: 'clamp(2.5rem, 8vw, 90px)' }}
           >
-            Project
+            Projects
           </h2>
         </FadeIn>
 
-        {/* Sticky-stacking Cards Wrapper */}
-        <div className="flex flex-col w-full relative">
+        {/* 2x2 Responsive Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 w-full items-stretch">
           {PROJECTS_DATA.map((project, index) => (
-            <ProjectCard
+            <FadeIn 
               key={project.num}
-              project={project}
-              index={index}
-              totalCards={PROJECTS_DATA.length}
-              stickyTop={stickyTop}
-            />
+              delay={index * 0.1}
+              y={30}
+              className="h-full"
+            >
+              <ProjectCard project={project} />
+            </FadeIn>
           ))}
         </div>
       </div>
