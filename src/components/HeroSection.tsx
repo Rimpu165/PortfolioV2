@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { FC } from 'react';
-import { motion, useSpring, useTransform, useMotionValue } from 'framer-motion';
+import { motion, useSpring, useTransform, useMotionValue, AnimatePresence } from 'framer-motion';
 import { FadeIn } from './FadeIn';
 import { Magnet } from './Magnet';
 import { ContactButton } from './ContactButton';
+import { ALL_SKILLS } from '../constants/skills';
 
 export const HeroSection: FC = () => {
   // Screen-space mouse positions for 3D orb tilt
@@ -13,6 +14,19 @@ export const HeroSection: FC = () => {
   // Smooth springs for orb rotations
   const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [15, -15]), { stiffness: 45, damping: 20 });
   const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-15, 15]), { stiffness: 45, damping: 20 });
+
+  const [skillGroup, setSkillGroup] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSkillGroup((prev) => (prev === 0 ? 1 : 0));
+    }, 2500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const visibleSkills = skillGroup === 0 
+    ? ALL_SKILLS.slice(0, 6) 
+    : ALL_SKILLS.slice(6);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -32,17 +46,17 @@ export const HeroSection: FC = () => {
   };
 
   return (
-    <section className="relative h-screen w-full flex flex-col justify-between bg-transparent text-textLight overflow-hidden select-none">
+    <section className="relative min-h-[100dvh] md:h-screen w-full flex flex-col justify-between bg-transparent text-textLight overflow-hidden select-none">
       
       {/* 1. Navbar */}
       <FadeIn
         as="nav"
         delay={0}
         y={-20}
-        className="w-full flex justify-between items-center px-6 md:px-10 pt-6 md:pt-8 z-30"
+        className="w-full flex flex-col sm:flex-row justify-between items-center gap-4 px-6 md:px-10 pt-6 md:pt-8 z-30"
       >
         {/* Name Logo on the Left */}
-        <span className="text-textLight font-black uppercase tracking-wider text-base md:text-lg lg:text-[1.4rem]">
+        <span className="text-textLight font-black uppercase tracking-wider text-sm sm:text-base md:text-lg lg:text-[1.4rem] whitespace-nowrap">
           Ripanshu Rana
         </span>
 
@@ -97,7 +111,7 @@ export const HeroSection: FC = () => {
               }}
               animate={{ y: [0, -8, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              className="relative w-full rounded-[45px] border border-white/[0.07] bg-[#0C0C0C]/50 backdrop-blur-2xl p-8 sm:p-14 flex flex-col items-center justify-center text-center shadow-[0_30px_100px_rgba(0,0,0,0.8)] hover:border-white/[0.15] transition-all duration-300 group overflow-hidden"
+              className="relative w-full rounded-[45px] border border-white/[0.07] bg-[#0C0C0C]/50 backdrop-blur-2xl p-6 sm:p-14 flex flex-col items-center justify-center text-center shadow-[0_30px_100px_rgba(0,0,0,0.8)] hover:border-white/[0.15] transition-all duration-300 group overflow-hidden"
             >
               {/* Cyber Grid Background Pattern */}
               <div 
@@ -159,32 +173,36 @@ export const HeroSection: FC = () => {
               {/* Tech Stack Floating Badges Grid */}
               <div 
                 style={{ transform: 'translateZ(45px)', transformStyle: 'preserve-3d' }}
-                className="flex flex-wrap justify-center gap-3 max-w-lg z-10"
+                className="flex flex-wrap justify-center gap-3 max-w-lg z-10 min-h-[92px] sm:min-h-[80px]"
               >
-                {[
-                  { name: 'React.js', color: '#00D8FF' },
-                  { name: 'Node.js', color: '#339933' },
-                  { name: 'Express.js', color: '#D7E2EA' },
-                  { name: 'MongoDB', color: '#47A248' },
-                  { name: 'Next.js', color: '#FFFFFF' },
-                  { name: 'Tailwind CSS', color: '#06B6D4' }
-                ].map((tech) => (
-                  <div
-                    key={tech.name}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/5 bg-white/[0.02] backdrop-blur-md shadow-sm select-none hover:border-white/10 hover:bg-white/[0.04] transition-all duration-300"
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={skillGroup}
+                    initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="flex flex-wrap justify-center gap-3 w-full"
                   >
-                    <span 
-                      className="w-1.5 h-1.5 rounded-full" 
-                      style={{ 
-                        backgroundColor: tech.color,
-                        boxShadow: `0 0 8px ${tech.color}`
-                      }} 
-                    />
-                    <span className="text-[10px] sm:text-xs font-medium tracking-wide text-[#D7E2EA]/85">
-                      {tech.name}
-                    </span>
-                  </div>
-                ))}
+                    {visibleSkills.map((tech) => (
+                      <div
+                        key={tech.name}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/5 bg-white/[0.02] backdrop-blur-md shadow-sm select-none hover:border-white/10 hover:bg-white/[0.04] transition-all duration-300"
+                      >
+                        <span 
+                          className="w-1.5 h-1.5 rounded-full" 
+                          style={{ 
+                            backgroundColor: tech.color,
+                            boxShadow: `0 0 8px ${tech.color}`
+                          }} 
+                        />
+                        <span className="text-[10px] sm:text-xs font-medium tracking-wide text-[#D7E2EA]/85">
+                          {tech.name}
+                        </span>
+                      </div>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </motion.div>
           </Magnet>
@@ -192,12 +210,12 @@ export const HeroSection: FC = () => {
       </div>
 
       {/* 3. Bottom bar */}
-      <div className="w-full flex justify-between items-end pb-7 sm:pb-8 md:pb-10 px-6 md:px-10 z-20 mt-auto">
+      <div className="w-full flex flex-col sm:flex-row justify-between items-center sm:items-end gap-6 pb-7 sm:pb-8 md:pb-10 px-6 md:px-10 z-20 mt-auto">
         <FadeIn
           as="p"
           delay={0.35}
           y={20}
-          className="text-textLight font-light uppercase tracking-wide leading-snug text-left select-none max-w-[180px] sm:max-w-[260px] md:max-w-[320px]"
+          className="text-textLight font-light uppercase tracking-wide leading-snug text-center sm:text-left select-none max-w-sm sm:max-w-[260px] md:max-w-[320px]"
           style={{ fontSize: 'clamp(0.75rem, 1.4vw, 1.5rem)' }}
         >
           a full stack developer driven by crafting responsive and visually appealing web interfaces
@@ -207,6 +225,7 @@ export const HeroSection: FC = () => {
           as="div"
           delay={0.5}
           y={20}
+          className="w-full sm:w-auto flex justify-center"
         >
           <ContactButton onClick={() => handleScrollTo('contact')} />
         </FadeIn>

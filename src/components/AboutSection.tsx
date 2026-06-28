@@ -50,7 +50,7 @@ export const AboutSection: FC = () => {
         x={-80}
         y={0}
         duration={0.9}
-        className="absolute top-[4%] left-[1%] sm:left-[2%] md:left-[4%] w-[120px] sm:w-[160px] md:w-[210px] z-10 pointer-events-none"
+        className="hidden sm:block absolute top-[4%] left-[1%] sm:left-[2%] md:left-[4%] w-[120px] sm:w-[160px] md:w-[210px] z-10 pointer-events-none"
       >
         <motion.div style={{ x: moonX, y: moonY }}>
           <img
@@ -68,7 +68,7 @@ export const AboutSection: FC = () => {
         x={-80}
         y={0}
         duration={0.9}
-        className="absolute bottom-[8%] left-[3%] sm:left-[6%] md:left-[10%] w-[100px] sm:w-[140px] md:w-[180px] z-10 pointer-events-none"
+        className="hidden sm:block absolute bottom-[8%] left-[3%] sm:left-[6%] md:left-[10%] w-[100px] sm:w-[140px] md:w-[180px] z-10 pointer-events-none"
       >
         <motion.div style={{ x: objectX, y: objectY }}>
           <img
@@ -86,7 +86,7 @@ export const AboutSection: FC = () => {
         x={80}
         y={0}
         duration={0.9}
-        className="absolute top-[4%] right-[1%] sm:right-[2%] md:right-[4%] w-[120px] sm:w-[160px] md:w-[210px] z-10 pointer-events-none"
+        className="hidden sm:block absolute top-[4%] right-[1%] sm:right-[2%] md:right-[4%] w-[120px] sm:w-[160px] md:w-[210px] z-10 pointer-events-none"
       >
         <motion.div style={{ x: legoX, y: legoY }}>
           <img
@@ -104,7 +104,7 @@ export const AboutSection: FC = () => {
         x={80}
         y={0}
         duration={0.9}
-        className="absolute bottom-[8%] right-[3%] sm:right-[6%] md:right-[10%] w-[130px] sm:w-[170px] md:w-[220px] z-10 pointer-events-none"
+        className="hidden sm:block absolute bottom-[8%] right-[3%] sm:right-[6%] md:right-[10%] w-[130px] sm:w-[170px] md:w-[220px] z-10 pointer-events-none"
       >
         <motion.div style={{ x: groupX, y: groupY }}>
           <img
@@ -135,7 +135,7 @@ export const AboutSection: FC = () => {
 
         {/* Animated Text Paragraph */}
         <AnimatedText
-          text="Graduate with a Bachelor's degree in Computer Applications, specializing in MERN stack and frontend development. I truly enjoy building responsive, clean, and visually appealing web interfaces. Let's create something incredible together!"
+          text="Graduate with a Bachelor's degree in Computer Applications, specializing in MERN stack and full stack development. I truly enjoy building responsive, clean, and visually appealing web interfaces. Let's create something incredible together!"
           className="text-textLight font-medium leading-relaxed text-center select-none flex flex-wrap justify-center"
           style={{ fontSize: 'clamp(0.95rem, 1.8vw, 1.25rem)' }}
         />

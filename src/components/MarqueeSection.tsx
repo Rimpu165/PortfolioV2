@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import type { FC, MouseEvent } from 'react';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { FadeIn } from './FadeIn';
+import { ROW1_SKILLS, ROW2_SKILLS } from '../constants/skills';
 
 interface SkillCardProps {
   name: string;
@@ -215,24 +216,6 @@ const SkillCard: FC<SkillCardProps> = ({ name, index, color }) => {
   );
 };
 
-const ROW1_SKILLS = [
-  { name: 'MERN Stack', idx: '01', color: '#B600A8' },
-  { name: 'React.js', idx: '02', color: '#00D8FF' },
-  { name: 'Next.js', idx: '03', color: '#FFFFFF' },
-  { name: 'Node.js', idx: '04', color: '#339933' },
-  { name: 'Express.js', idx: '05', color: '#FFFFFF' },
-  { name: 'MongoDB', idx: '06', color: '#47A248' },
-];
-
-const ROW2_SKILLS = [
-  { name: 'JavaScript', idx: '07', color: '#F7DF1E' },
-  { name: 'HTML & CSS', idx: '08', color: '#E34F26' },
-  { name: 'Tailwind CSS', idx: '09', color: '#38BDF8' },
-  { name: 'Bootstrap', idx: '10', color: '#7952B3' },
-  { name: 'Git', idx: '11', color: '#F05032' },
-  { name: 'GitHub', idx: '12', color: '#FFFFFF' },
-  { name: 'DevTools', idx: '13', color: '#00FF66' },
-];
 
 export const MarqueeSection: FC = () => {
   // Double the dataset for seamless infinite looping

@@ -117,7 +117,7 @@ export const ThreeDBackground: FC<ThreeDBackgroundProps> = ({ children }) => {
       </div>
 
       {/* Main Content Wrapper (Z-index high to receive mouse clicks) */}
-      <div className="relative z-10 w-full min-h-screen">
+      <div className="relative z-10 w-full min-h-screen overflow-x-hidden">
         {children}
       </div>
     </div>

@@ -30,6 +30,7 @@ const Character: FC<CharacterProps> = ({ char, index, total, progress }) => {
       <motion.span
         style={{ opacity }}
         className="absolute top-0 left-0"
+        aria-hidden="true"
       >
         {char === ' ' ? '\u00A0' : char}
       </motion.span>
@@ -45,7 +46,9 @@ export const AnimatedText: React.FC<AnimatedTextProps> = ({ text, className = ''
     offset: ['start 0.8', 'end 0.2'],
   });
 
-  const chars = text.split('');
+  const words = text.split(' ');
+  let charIndexCounter = 0;
+  const totalChars = text.length;
 
   return (
     <p
@@ -53,15 +56,35 @@ export const AnimatedText: React.FC<AnimatedTextProps> = ({ text, className = ''
       className={className}
       style={style}
     >
-      {chars.map((char, index) => (
-        <Character
-          key={index}
-          char={char}
-          index={index}
-          total={chars.length}
-          progress={scrollYProgress}
-        />
-      ))}
+      {words.map((word, wIdx) => {
+        const wordChars = word.split('');
+        return (
+          <span key={wIdx} className="inline-block whitespace-nowrap">
+            {wordChars.map((char) => {
+              const currentIdx = charIndexCounter++;
+              return (
+                <Character
+                  key={currentIdx}
+                  char={char}
+                  index={currentIdx}
+                  total={totalChars}
+                  progress={scrollYProgress}
+                />
+              );
+            })}
+            {/* Render trailing space if not the last word */}
+            {wIdx < words.length - 1 && (
+              <Character
+                key={`space-${wIdx}`}
+                char=" "
+                index={charIndexCounter++}
+                total={totalChars}
+                progress={scrollYProgress}
+              />
+            )}
+          </span>
+        );
+      })}
     </p>
   );
 };
