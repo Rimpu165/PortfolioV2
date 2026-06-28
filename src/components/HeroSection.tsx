@@ -6,15 +6,7 @@ import { Magnet } from './Magnet';
 import { ContactButton } from './ContactButton';
 import { ALL_SKILLS } from '../constants/skills';
 
-export const HeroSection: FC = () => {
-  // Screen-space mouse positions for 3D orb tilt
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  // Smooth springs for orb rotations
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [15, -15]), { stiffness: 45, damping: 20 });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-15, 15]), { stiffness: 45, damping: 20 });
-
+const TechStackGrid: FC = () => {
   const [skillGroup, setSkillGroup] = useState(0);
 
   useEffect(() => {
@@ -27,6 +19,52 @@ export const HeroSection: FC = () => {
   const visibleSkills = skillGroup === 0 
     ? ALL_SKILLS.slice(0, 6) 
     : ALL_SKILLS.slice(6);
+
+  return (
+    <div 
+      style={{ transform: 'translateZ(45px)', transformStyle: 'preserve-3d' }}
+      className="flex flex-wrap justify-center gap-3 max-w-lg z-10 min-h-[92px] sm:min-h-[80px]"
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={skillGroup}
+          initial={{ opacity: 0, scale: 0.95, y: 5 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -5 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          className="flex flex-wrap justify-center gap-3 w-full"
+        >
+          {visibleSkills.map((tech) => (
+            <div
+              key={tech.name}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/5 bg-white/[0.02] backdrop-blur-md shadow-sm select-none hover:border-white/10 hover:bg-white/[0.04] transition-all duration-300"
+            >
+              <span 
+                className="w-1.5 h-1.5 rounded-full" 
+                style={{ 
+                  backgroundColor: tech.color,
+                  boxShadow: `0 0 8px ${tech.color}`
+                }} 
+              />
+              <span className="text-[10px] sm:text-xs font-medium tracking-wide text-[#D7E2EA]/85">
+                {tech.name}
+              </span>
+            </div>
+          ))}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export const HeroSection: FC = () => {
+  // Screen-space mouse positions for 3D orb tilt
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Smooth springs for orb rotations
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [15, -15]), { stiffness: 45, damping: 20 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-15, 15]), { stiffness: 45, damping: 20 });
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -171,39 +209,7 @@ export const HeroSection: FC = () => {
               </div>
 
               {/* Tech Stack Floating Badges Grid */}
-              <div 
-                style={{ transform: 'translateZ(45px)', transformStyle: 'preserve-3d' }}
-                className="flex flex-wrap justify-center gap-3 max-w-lg z-10 min-h-[92px] sm:min-h-[80px]"
-              >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={skillGroup}
-                    initial={{ opacity: 0, scale: 0.95, y: 5 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className="flex flex-wrap justify-center gap-3 w-full"
-                  >
-                    {visibleSkills.map((tech) => (
-                      <div
-                        key={tech.name}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/5 bg-white/[0.02] backdrop-blur-md shadow-sm select-none hover:border-white/10 hover:bg-white/[0.04] transition-all duration-300"
-                      >
-                        <span 
-                          className="w-1.5 h-1.5 rounded-full" 
-                          style={{ 
-                            backgroundColor: tech.color,
-                            boxShadow: `0 0 8px ${tech.color}`
-                          }} 
-                        />
-                        <span className="text-[10px] sm:text-xs font-medium tracking-wide text-[#D7E2EA]/85">
-                          {tech.name}
-                        </span>
-                      </div>
-                    ))}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+              <TechStackGrid />
             </motion.div>
           </Magnet>
         </FadeIn>
